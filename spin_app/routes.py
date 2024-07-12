@@ -134,7 +134,14 @@ def admin_dash():
 @app.route('/sp_dash')
 @login_required
 def sp_dash():
-    return render_template('sp_dash.html')
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
+
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+    campaigns = Campaign.query.filter_by(owner_id=sponsor_profile.id).all()
+    return render_template('sp_dash.html', campaigns=campaigns)
+
 
 @app.route('/inf_dash')
 @login_required
@@ -146,7 +153,7 @@ def inf_dash():
 def campaigns():
     if current_user.role != 'sponsor':
         flash('You do not have permission to access this page', category='danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
 
     sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
     campaigns = Campaign.query.filter_by(owner_id=sponsor_profile.id).all()
@@ -157,7 +164,7 @@ def campaigns():
 def new_campaign():
     if current_user.role != 'sponsor':
         flash('You do not have permission to access this page', category='danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
 
     return render_template('new_campaign.html')
 
@@ -205,4 +212,64 @@ def new_campaign_post():
     db.session.commit()
 
     flash('Campaign created successfully', category='success')
-    return redirect(url_for('campaigns'))
+    return render_template('sp_dash.html')  # Redirect to sp_dash instead of campaigns
+
+@app.route("/view_campaign" , methods=['GET'])
+@login_required
+def view_section():
+   camp = Campaign.query.all()
+   return render_template('view_campaign.html' , scampaigns = camp)
+
+@app.route('/campaigns/<int:id>/edit', methods=['GET'])
+@login_required
+def edit_campaign(id):
+    campaign = Campaign.query.get_or_404(id)
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    if campaign.owner_id != sponsor_profile.id:
+        flash('You do not have permission to edit this campaign', category='danger')
+        return redirect(url_for('campaigns'))
+
+    return render_template('edit_campaign.html', campaign=campaign)
+
+@app.route('/campaigns/<int:id>/edit', methods=['POST'])
+@login_required
+def edit_campaign_post(id):
+    campaign = Campaign.query.get_or_404(id)
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    if campaign.owner_id != sponsor_profile.id:
+        flash('You do not have permission to edit this campaign', category='danger')
+        return redirect(url_for('campaigns'))
+
+    name = request.form.get('name')
+    description = request.form.get('description')
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+    budget = request.form.get('budget')
+    visibility = request.form.get('visibility')
+    goals = request.form.get('goals')
+
+    # Convert date strings to date objects
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format', category='danger')
+        return redirect(url_for('edit_campaign', id=campaign.id))
+
+    if not name or not description or not start_date or not end_date or not budget or not visibility or not goals:
+        flash('Please fill out all fields', category='danger')
+        return redirect(url_for('edit_campaign', id=campaign.id))
+
+    campaign.name = name
+    campaign.description = description
+    campaign.start_date = start_date
+    campaign.end_date = end_date
+    campaign.budget = budget
+    campaign.visibility = visibility
+    campaign.goals = goals
+
+    db.session.commit()
+    flash('Campaign updated successfully', category='success')
+    return redirect(url_for('sp_dash'))

@@ -173,7 +173,7 @@ def new_campaign():
 def new_campaign_post():
     if current_user.role != 'sponsor':
         flash('You do not have permission to access this page', category='danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
 
     name = request.form.get('name')
     description = request.form.get('description')
@@ -226,7 +226,7 @@ def view_campaign(id):
 @app.route('/campaigns/<int:id>/edit', methods=['GET'])
 @login_required
 def edit_campaign(id):
-    campaign = Campaign.query.get_or_404(id)
+    campaign = Campaign.query.get(id)
     sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
 
     if campaign.owner_id != sponsor_profile.id:
@@ -238,7 +238,7 @@ def edit_campaign(id):
 @app.route('/campaigns/<int:id>/edit', methods=['POST'])
 @login_required
 def edit_campaign_post(id):
-    campaign = Campaign.query.get_or_404(id)
+    campaign = Campaign.query.get(id)
     sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
 
     if campaign.owner_id != sponsor_profile.id:
@@ -275,4 +275,26 @@ def edit_campaign_post(id):
 
     db.session.commit()
     flash('Campaign updated successfully', category='success')
+    return redirect(url_for('sp_dash'))
+
+@app.route('/campaign/<int:id>/delete')
+@login_required
+def delete_campaign(id):
+    campaign = Campaign.query.get(id)
+    if not campaign:
+        flash('campaign does not exist', category='danger')
+        return redirect(url_for('sp_dash'))
+    return render_template('delete_campaign.html', campaign=campaign)
+
+@app.route('/campaign/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_campaign_post(id):
+    campaign = Campaign.query.get(id)
+    if not campaign:
+        flash('campaign does not exist', category='danger')
+        return redirect(url_for('sp_dash'))
+    db.session.delete(campaign)
+    db.session.commit()
+
+    flash('Campaign deleted successfully', category='success')
     return redirect(url_for('sp_dash'))

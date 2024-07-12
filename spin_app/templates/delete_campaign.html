@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Delete campaign
+{% endblock %}
+
+{% block content %}
+<center>
+    <h1 class="display-1">Delete Campaign</h1>
+</center>
+    <p class="'f-3">Are you sure you want to delete {{ campaign.name }}?</p>
+    </div>
+    <form action="" method="post" class="form">
+        <div class="form-group">
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash    "></i>
+                Delete
+            </button>
+        </div>
+    </form>
+{% endblock %}

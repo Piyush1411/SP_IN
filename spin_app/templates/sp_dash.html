@@ -1,4 +1,4 @@
-<!--sp_dash.html-->
+<!-- sp_dash.html -->
 {% extends 'base.html' %}
 
 {% block title %}
@@ -7,6 +7,26 @@
 
 {% block content %}
 
+<center>
 <h1 class="display-1">Sponsor Dashboard</h1>
+</center>
+
+<h1>Your Campaigns</h1>
+<a href="{{ url_for('new_campaign') }}" class="btn btn-primary">New Campaign</a>
+<ul>
+    {% for campaign in campaigns %}
+        <li>
+            <h2>{{ campaign.name }}</h2>
+            <p>{{ campaign.description }}</p>
+            <p>Start Date: {{ campaign.start_date }}</p>
+            <p>End Date: {{ campaign.end_date }}</p>
+            <p>Budget: ${{ campaign.budget }}</p>
+            <a href="#" class="btn btn-secondary">Edit</a>
+            <form action="#" method="POST" style="display:inline;">
+                <input type="submit" value="Delete" class="btn btn-danger">
+            </form>
+        </li>
+    {% endfor %}
+</ul>
 
 {% endblock %}

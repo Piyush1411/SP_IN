@@ -2,7 +2,8 @@ from flask import render_template, request, flash, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from spin_app import app, db
-from spin_app.models import User, InfluencerProfile, SponsorProfile
+from spin_app.models import User, InfluencerProfile, SponsorProfile, Campaign
+from datetime import datetime
 
 @app.route('/')
 def index():
@@ -139,3 +140,69 @@ def sp_dash():
 @login_required
 def inf_dash():
     return render_template('inf_dash.html')
+
+@app.route('/campaigns')
+@login_required
+def campaigns():
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('index'))
+
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+    campaigns = Campaign.query.filter_by(owner_id=sponsor_profile.id).all()
+    return render_template('sp_dash.html', campaigns=campaigns)
+
+@app.route('/campaigns/new', methods=['GET'])
+@login_required
+def new_campaign():
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('index'))
+
+    return render_template('new_campaign.html')
+
+@app.route('/campaigns/new', methods=['POST'])
+@login_required
+def new_campaign_post():
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('index'))
+
+    name = request.form.get('name')
+    description = request.form.get('description')
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+    budget = request.form.get('budget')
+    visibility = request.form.get('visibility')
+    goals = request.form.get('goals')
+
+    # Convert date strings to date objects
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format', category='danger')
+        return redirect(url_for('new_campaign'))
+
+    if not name or not description or not start_date or not end_date or not budget or not visibility or not goals:
+        flash('Please fill out all fields', category='danger')
+        return redirect(url_for('new_campaign'))
+
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    new_campaign = Campaign(
+        name=name,
+        description=description,
+        start_date=start_date,
+        end_date=end_date,
+        budget=budget,
+        visibility=visibility,
+        goals=goals,
+        owner_id=sponsor_profile.id
+    )
+
+    db.session.add(new_campaign)
+    db.session.commit()
+
+    flash('Campaign created successfully', category='success')
+    return redirect(url_for('campaigns'))

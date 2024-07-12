@@ -1,0 +1,75 @@
+<!-- register.html -->
+{% extends "base.html" %}
+
+{% block title %}
+    Registration Page
+{% endblock %}
+
+{% block content %}
+  <h2>Register</h2>
+  <form action="{{ url_for('register') }}" method="POST">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="fullName">Full Name:</label>
+        <input type="text" id="fullName" name="fullName" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="password1">Password:</label>
+        <input type="password" id="password1" name="password1" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="password2">Confirm Password:</label>
+        <input type="password" id="password2" name="password2" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="role">Role</label>
+      <select class="form-control" id="role" name="role" required>
+        <option value="influencer">Influencer</option>
+        <option value="sponsor">Sponsor</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="influencer-fields" style="display: none;">
+        <label for="category">Category</label>
+        <input type="text" class="form-control" id="category" name="category">
+        <label for="niche">Niche</label>
+        <input type="text" class="form-control" id="niche" name="niche">
+        <label for="reach">Reach</label>
+        <input type="number" class="form-control" id="reach" name="reach">
+    </div>
+
+    <div class="form-group" id="sponsor-fields" style="display: none;">
+        <label for="companyName">Company Name</label>
+        <input type="text" class="form-control" id="companyName" name="companyName">
+        <label for="industry">Industry</label>
+        <input type="text" class="form-control" id="industry" name="industry">
+        <label for="budget">Budget</label>
+        <input type="number" class="form-control" id="budget" name="budget">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+  </form>
+
+  <script>
+    document.getElementById('role').addEventListener('change', function() {
+      var role = this.value;
+      if (role === 'influencer') {
+        document.getElementById('influencer-fields').style.display = 'block';
+        document.getElementById('sponsor-fields').style.display = 'none';
+      } else if (role === 'sponsor') {
+        document.getElementById('influencer-fields').style.display = 'none';
+        document.getElementById('sponsor-fields').style.display = 'block';
+      } else {
+        document.getElementById('influencer-fields').style.display = 'none';
+        document.getElementById('sponsor-fields').style.display = 'none';
+      }
+    });
+  </script>
+{% endblock %}

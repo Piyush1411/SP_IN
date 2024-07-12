@@ -1,0 +1,26 @@
+<!--home.html-->
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<html style="overflow: hidden;">
+    <div style="background-image: url('{{ url_for('static', filename='images/img.jpg') }}'); height: 100vh; background-size: cover; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 20px;">
+        <h1 style="color: white; font-size: 6em;">SP_IN</h1>
+        
+        <div style="display: flex; justify-content: space-between; width: 5%; position: absolute; bottom: 5%;">
+            <!-- User icon on the left with a link to user.html -->
+            <a href="{{ url_for('login') }}" style="cursor: pointer;">
+                <i class="fa fa-user fa-5x" style="color: white; align-self: flex-end; margin-right: 10px;"></i>
+            </a>
+
+            <!-- Admin icon on the right with a link to Admin_login -->
+            <a href="{{ url_for('admin_login') }}" style="cursor: pointer; margin-left: 50px;">
+                <i class="fa fa-user-lock fa-5x" style="color: white; align-self: flex-end; margin-left: 10px;"></i>
+            </a>
+        </div>
+    </div>
+</html>
+{% endblock %}
+
+

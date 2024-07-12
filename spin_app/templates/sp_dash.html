@@ -8,7 +8,7 @@
 <center>
 <h1 class="display-1">Sponsor Dashboard</h1>
 </center>
-<a href="{{url_for('new_campaign')}}" class="btn btn-success">
+<a href="{{ url_for('new_campaign') }}" class="btn btn-success">
     <i class="fas fa-plus"></i>
     New Campaign
 </a>
@@ -20,12 +20,6 @@
         <tr>
             <th>ID</th>
             <th>Name</th>
-            <th>Description</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Budget</th>
-            <th>Visibility</th>
-            <th>Goals</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -34,21 +28,19 @@
         <tr>
             <td>{{ campaign.id }}</td>
             <td>{{ campaign.name }}</td>
-            <td>{{ campaign.description }}</td>
-            <td>{{ campaign.start_date }}</td>
-            <td>{{ campaign.end_date }}</td>
-            <td>${{ campaign.budget }}</td>
-            <td>{{ campaign.visibility }}</td>
-            <td>{{ campaign.goals }}</td>
             <td>
+                <a href="{{ url_for('view_campaign', id=campaign.id) }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Show
+                </a>
                 <a href="{{url_for('edit_campaign', id=campaign.id)}}" class="btn btn-primary">
-                    <i class="fas fa-edit"></i>
+                    <i class="fas fa-edit    "></i>
                     Edit
-                </a>
-                <a href="#" class="btn btn-danger">
-                    <i class="fas fa-trash"></i>
+               </a>
+               <a href="#" class="btn btn-danger">
+                <i class="fas fa-trash "></i>
                     Delete
-                </a>
+               </a>
             </td>
         </tr>
         {% endfor %}

@@ -214,11 +214,14 @@ def new_campaign_post():
     flash('Campaign created successfully', category='success')
     return render_template('sp_dash.html')  # Redirect to sp_dash instead of campaigns
 
-@app.route("/view_campaign" , methods=['GET'])
+@app.route("/campaigns/<int:id>/", methods=['GET'])
 @login_required
-def view_section():
-   camp = Campaign.query.all()
-   return render_template('view_campaign.html' , scampaigns = camp)
+def view_campaign(id):
+    camp = Campaign.query.get(id)
+    if not camp:
+        flash('Campaign does not exist')
+        return redirect(url_for('sp_dash'))
+    return render_template('view_campaign.html', campaign=camp)
 
 @app.route('/campaigns/<int:id>/edit', methods=['GET'])
 @login_required

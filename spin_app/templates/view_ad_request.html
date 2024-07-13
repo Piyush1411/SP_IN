@@ -39,7 +39,7 @@
         Edit Ad Request
     </a>
     
-    <a href="#" class="btn btn-danger">
+    <a href="{{ url_for('delete_ad_request', id=ad_request.id) }}" class="btn btn-danger">
         <i class="fas fa-trash"></i>
         Delete
     </a>

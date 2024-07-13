@@ -140,7 +140,7 @@ def sp_dash():
 
     sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
     campaigns = Campaign.query.filter_by(owner_id=sponsor_profile.id).all()
-    return render_template('sp_dash.html', campaigns=campaigns)
+    return render_template('sp_dash.html',sponsor_profile=sponsor_profile, campaigns=campaigns)
 
 
 @app.route('/inf_dash')
@@ -425,6 +425,44 @@ def edit_ad_request_post(id):
     db.session.commit()
     flash('Ad Request updated successfully', category='success')
     return redirect(url_for('view_ad_request', id=ad_request.id))
+
+@app.route('/ad_request/<int:id>/delete', methods=['GET'])
+@login_required
+def delete_ad_request(id):
+    ad_request = AdRequest.query.get(id)
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    if not ad_request:
+        flash('Ad Request does not exist', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    if ad_request.sponsor_id != sponsor_profile.id:
+        flash('You do not have permission to delete this ad request', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    # Assuming you want to confirm deletion before proceeding
+    return render_template('delete_ad_request.html', ad_request=ad_request)
+
+@app.route('/ad_request/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_ad_request_post(id):
+    ad_request = AdRequest.query.get(id)
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    if not ad_request:
+        flash('Ad Request does not exist', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    if ad_request.sponsor_id != sponsor_profile.id:
+        flash('You do not have permission to delete this ad request', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    db.session.delete(ad_request)
+    db.session.commit()
+
+    flash('Ad Request deleted successfully', category='success')
+    return redirect(url_for('sp_dash'))
+
 
 
 

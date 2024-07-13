@@ -10,6 +10,14 @@
     <form method="POST" action="{{ url_for('create_ad_request_post') }}">
         <input type="hidden" name="campaign_id" value="{{ campaign.id }}">
         <div class="form-group">
+            <label for="sponsor_id">Sponsor</label>
+            <select class="form-control" id="sponsor_id" name="sponsor_id">
+                {% for sponsor in sponsors %}
+                <option value="{{ sponsor.id }}">{{ sponsor.company_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
             <label for="influencer_id">Influencer</label>
             <select class="form-control" id="influencer_id" name="influencer_id">
                 {% for influencer in influencers %}

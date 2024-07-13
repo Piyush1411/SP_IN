@@ -47,10 +47,12 @@ class Campaign(db.Model):
 class AdRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor_profile.id'), nullable=False)
     influencer_id = db.Column(db.Integer, db.ForeignKey('influencer_profile.id'), nullable=False)
     messages = db.Column(db.Text, nullable=True)
     requirements = db.Column(db.Text, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False)  # 'Pending', 'Accepted', 'Rejected'
     campaign = db.relationship('Campaign', backref=db.backref('ad_requests', lazy=True, cascade='all, delete-orphan'))
+    sponsor = db.relationship('SponsorProfile', backref=db.backref('ad_requests', lazy=True, cascade='all, delete-orphan'))  
     influencer = db.relationship('InfluencerProfile', backref=db.backref('ad_requests', lazy=True, cascade='all, delete-orphan'))

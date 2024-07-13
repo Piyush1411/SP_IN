@@ -221,12 +221,11 @@ def view_campaign(id):
     if not campaign:
         flash('Campaign not found.', category='danger')
         return redirect(url_for('sp_dash'))
-
+    
     # Fetch the ad request related to this campaign, if applicable
     ad_request = AdRequest.query.filter_by(campaign_id=id).first()
 
     return render_template('view_campaign.html', campaign=campaign, ad_request=ad_request)
-
 
 @app.route('/campaigns/<int:id>/edit', methods=['GET'])
 @login_required
@@ -304,50 +303,49 @@ def delete_campaign_post(id):
     flash('Campaign deleted successfully', category='success')
     return redirect(url_for('view_campaign', id=campaign.id))
 
-@app.route('/ad_request/create/<int:campaign_id>', methods=['GET'])
+@app.route('/ad_request/create', methods=['GET'])
 @login_required
-def create_ad_request(campaign_id):
-    if current_user.role != 'sponsor':
-        flash('You do not have permission to access this page', category='danger')
-        return redirect(url_for('sp_dash'))
+def create_ad_request():
+    campaign_id = request.args.get('campaign_id')
     campaign = Campaign.query.get(campaign_id)
-    if not campaign:
-        flash('Campaign does not exist')
-        return redirect(url_for('sp_dash'))
+    
+    # Fetch sponsor profile associated with the current user
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
 
-    # Fetch influencers and any other data needed for the form
+    if not sponsor_profile:
+        flash('You do not have a sponsor profile', 'danger')
+        return redirect(url_for('sp_dash'))  # Adjust redirection as per your application flow
+
+    # Fetch all sponsors associated with the sponsor profile
+    sponsors = [sponsor_profile]  # Assuming sponsor_profile itself is the sponsor
+    
+    # Fetch all influencers
     influencers = InfluencerProfile.query.all()
 
-    return render_template('new_ad_request.html', campaign=campaign, influencers=influencers)
-
+    return render_template('new_ad_request.html', campaign=campaign, sponsors=sponsors, influencers=influencers)
 
 @app.route('/ad_request/create', methods=['POST'])
 @login_required
 def create_ad_request_post():
-    if current_user.role != 'sponsor':
-        flash('You do not have permission to access this page', category='danger')
-        return redirect(url_for('sp_dash'))
     campaign_id = request.form.get('campaign_id')
+    sponsor_id = request.form.get('sponsor_id')
     influencer_id = request.form.get('influencer_id')
     messages = request.form.get('messages')
     requirements = request.form.get('requirements')
     payment_amount = request.form.get('payment_amount')
     status = request.form.get('status')
 
-    try:
-        payment_amount = float(payment_amount)
-    except ValueError:
-        flash('Invalid payment amount', category='danger')
-        return redirect(url_for('new_ad_request', campaign_id=campaign_id))
+    # Validate form data
+    if not (campaign_id and sponsor_id and influencer_id and requirements and payment_amount and status):
+        flash('Please fill out all required fields', 'danger')
+        return redirect(url_for('create_ad_request', campaign_id=campaign_id))
 
-    if not requirements or not payment_amount or not status:
-        flash('Please fill out all fields', category='danger')
-        return redirect(url_for('new_ad_request', campaign_id=campaign_id))
-
-    # Create the new ad request
+    # Create a new ad request
     ad_request = AdRequest(
         campaign_id=campaign_id,
+        sponsor_id=sponsor_id,
         influencer_id=influencer_id,
+        messages=messages,
         requirements=requirements,
         payment_amount=payment_amount,
         status=status
@@ -356,8 +354,8 @@ def create_ad_request_post():
     db.session.add(ad_request)
     db.session.commit()
 
-    flash('Ad Request created successfully', category='success')
-    return redirect(url_for('sp_dash'))
+    flash('Ad request created successfully', 'success')
+    return redirect(url_for('view_campaign', id=campaign_id))
 
 @app.route('/ad_request/<int:id>')
 @login_required
@@ -371,5 +369,63 @@ def view_ad_request(id):
     campaign = ad_request.campaign
 
     return render_template('view_ad_request.html', ad_request=ad_request, campaign=campaign)
+
+@app.route('/ad_request/<int:id>/edit', methods=['GET'])
+@login_required
+def edit_ad_request(id):
+    ad_request = AdRequest.query.get(id)
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    if not ad_request:
+        flash('Ad Request does not exist', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    if ad_request.sponsor_id != sponsor_profile.id:
+        flash('You do not have permission to edit this ad request', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    return render_template('edit_ad_request.html', ad_request=ad_request)
+
+@app.route('/ad_request/<int:id>/edit', methods=['POST'])
+@login_required
+def edit_ad_request_post(id):
+    ad_request = AdRequest.query.get(id)
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+
+    if not ad_request:
+        flash('Ad Request does not exist', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    if ad_request.sponsor_id != sponsor_profile.id:
+        flash('You do not have permission to edit this ad request', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    influencer_id = request.form.get('influencer_id')
+    messages = request.form.get('messages')
+    requirements = request.form.get('requirements')
+    payment_amount = request.form.get('payment_amount')
+    status = request.form.get('status')
+
+    try:
+        payment_amount = float(payment_amount)
+    except ValueError:
+        flash('Invalid payment amount', category='danger')
+        return redirect(url_for('edit_ad_request', id=ad_request.id))
+
+    if not influencer_id or not messages or not requirements or not payment_amount or not status:
+        flash('Please fill out all fields', category='danger')
+        return redirect(url_for('edit_ad_request', id=ad_request.id))
+
+    ad_request.influencer_id = influencer_id
+    ad_request.messages = messages
+    ad_request.requirements = requirements
+    ad_request.payment_amount = payment_amount
+    ad_request.status = status
+
+    db.session.commit()
+    flash('Ad Request updated successfully', category='success')
+    return redirect(url_for('view_ad_request', id=ad_request.id))
+
+
 
 

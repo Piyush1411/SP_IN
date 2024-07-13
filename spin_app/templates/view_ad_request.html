@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    View Ad Request
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Show Ad Request for {{ campaign.name }}</h1>
+    <table class="table table-dark table-striped">
+        <tr>
+            <th>ID</th>
+            <td>{{ ad_request.id }}</td>
+        </tr>
+        <tr>
+            <th>Influencer</th>
+            <td>{{ ad_request.influencer.name }}</td>  
+        </tr>
+        <tr>
+            <th>Requirements</th>
+            <td>{{ ad_request.requirements }}</td>
+        </tr>
+        <tr>
+            <th>Payment Amount</th>
+            <td>${{ ad_request.payment_amount }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{{ ad_request.status }}</td>
+        </tr>
+    </table>
+    <a href="{{ url_for('view_campaign', id=campaign.id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        Back to View Campaign
+    </a>
+    
+    <a href="#" class="btn btn-primary">
+        <i class="fas fa-edit"></i>
+        Edit
+    </a>
+    <a href="#" class="btn btn-danger">
+        <i class="fas fa-trash"></i>
+        Delete
+    </a>
+</div>
+{% endblock %}

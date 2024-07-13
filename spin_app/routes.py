@@ -212,16 +212,21 @@ def new_campaign_post():
     db.session.commit()
 
     flash('Campaign created successfully', category='success')
-    return render_template('sp_dash.html')  # Redirect to sp_dash instead of campaigns
+    return render_template('sp_dash.html') 
 
-@app.route("/campaigns/<int:id>/", methods=['GET'])
+@app.route('/campaign/<int:id>')
 @login_required
 def view_campaign(id):
-    camp = Campaign.query.get(id)
-    if not camp:
-        flash('Campaign does not exist')
+    campaign = Campaign.query.get(id)
+    if not campaign:
+        flash('Campaign not found.', category='danger')
         return redirect(url_for('sp_dash'))
-    return render_template('view_campaign.html', campaign=camp)
+
+    # Fetch the ad request related to this campaign, if applicable
+    ad_request = AdRequest.query.filter_by(campaign_id=id).first()
+
+    return render_template('view_campaign.html', campaign=campaign, ad_request=ad_request)
+
 
 @app.route('/campaigns/<int:id>/edit', methods=['GET'])
 @login_required
@@ -275,7 +280,7 @@ def edit_campaign_post(id):
 
     db.session.commit()
     flash('Campaign updated successfully', category='success')
-    return redirect(url_for('sp_dash'))
+    return redirect(url_for('view_campaign', id=campaign.id))
 
 @app.route('/campaign/<int:id>/delete')
 @login_required
@@ -297,7 +302,7 @@ def delete_campaign_post(id):
     db.session.commit()
 
     flash('Campaign deleted successfully', category='success')
-    return redirect(url_for('sp_dash'))
+    return redirect(url_for('view_campaign', id=campaign.id))
 
 @app.route('/ad_request/create/<int:campaign_id>', methods=['GET'])
 @login_required
@@ -324,6 +329,7 @@ def create_ad_request_post():
         return redirect(url_for('sp_dash'))
     campaign_id = request.form.get('campaign_id')
     influencer_id = request.form.get('influencer_id')
+    messages = request.form.get('messages')
     requirements = request.form.get('requirements')
     payment_amount = request.form.get('payment_amount')
     status = request.form.get('status')
@@ -350,5 +356,20 @@ def create_ad_request_post():
     db.session.add(ad_request)
     db.session.commit()
 
-    flash('Ad Request created successfully')
+    flash('Ad Request created successfully', category='success')
     return redirect(url_for('sp_dash'))
+
+@app.route('/ad_request/<int:id>')
+@login_required
+def view_ad_request(id):
+    ad_request = AdRequest.query.get(id)
+    if not ad_request:
+        flash('Ad Request not found.', category='danger')
+        return redirect(url_for('sp_dash'))
+
+    # Assuming campaign is related to the ad request, fetch it here
+    campaign = ad_request.campaign
+
+    return render_template('view_ad_request.html', ad_request=ad_request, campaign=campaign)
+
+

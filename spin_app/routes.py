@@ -140,13 +140,88 @@ def sp_dash():
 
     sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
     campaigns = Campaign.query.filter_by(owner_id=sponsor_profile.id).all()
-    return render_template('sp_dash.html',sponsor_profile=sponsor_profile, campaigns=campaigns)
+    return render_template('sp_dash.html',sponsor_profile=sponsor_profile, campaigns=campaigns, search_result=None)
 
+@app.route('/sp_dash', methods=['POST'])
+@login_required
+def sp_dash_post():
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
 
-@app.route('/inf_dash')
+    sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
+    
+    searchbyniche = request.form.get('searchbyniche')
+    searchbyreach = request.form.get('searchbyreach')
+    influencer_id = request.form.get('influencer')
+
+    # Perform search based on input criteria
+    query = InfluencerProfile.query
+
+    if searchbyniche:
+        query = query.filter(InfluencerProfile.niche.ilike(f"%{searchbyniche}%"))
+
+    if searchbyreach:
+        query = query.filter(InfluencerProfile.reach >= int(searchbyreach))
+
+    if influencer_id:
+        query = query.filter_by(id=influencer_id)
+
+    search_result = query.all()
+
+    return render_template('sp_dash.html', sponsor_profile=sponsor_profile, search_result=search_result)
+
+@app.route('/inf_dash', methods=['GET'])
 @login_required
 def inf_dash():
-    return render_template('inf_dash.html')
+    if current_user.role != 'influencer':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
+    
+    influencer_profile = InfluencerProfile.query.filter_by(user_id=current_user.id).first()
+    
+    return render_template('inf_dash.html', influencer_profile=influencer_profile, search_result=None)
+
+
+@app.route('/inf_dash', methods=['POST'])
+@login_required
+def inf_dash_post():
+    if current_user.role != 'influencer':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
+    
+    # Fetch influencer profile
+    influencer_profile = InfluencerProfile.query.filter_by(user_id=current_user.id).first()
+    
+    # Get search criteria from form
+    searchbyniche = request.form.get('searchbyniche')
+    searchbyreach = request.form.get('searchbyreach')
+    sponsor_id = request.form.get('sponsor')
+
+    # Perform search based on input criteria
+    query = Campaign.query.filter_by(visibility='public')
+
+    if searchbyniche:
+        query = query.filter(Campaign.goals.ilike(f"%{searchbyniche}%"))
+
+    if searchbyreach:
+        query = query.filter(Campaign.owner.has(InfluencerProfile.reach >= searchbyreach))
+
+    search_result = query.all()
+
+    return render_template('inf_dash.html', influencer_profile=influencer_profile, search_result=search_result)
+
+
+@app.route('/clear_search', methods=['POST'])
+@login_required
+def clear_search():
+    if current_user.role == 'sponsor':
+        return redirect(url_for('sp_dash'))
+    elif current_user.role == 'influencer':
+        return redirect(url_for('inf_dash'))
+    else:
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
 
 @app.route('/campaigns')
 @login_required

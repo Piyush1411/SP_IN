@@ -571,7 +571,40 @@ def show_ad_requests():
     return render_template('show_ad_requests.html', influencer_profile=influencer_profile, ad_requests=ad_requests)
 
 
+@app.route('/show_ad_request/<int:id>/accept', methods=['POST'])
+@login_required
+def accept_ad_request(id):
+    ad_request = AdRequest.query.get_or_404(id)
+    if current_user.role != 'influencer':
+        flash('You do not have permission to perform this action', category='danger')
+        return redirect(url_for('home'))
 
+    # Check if any influencer profile of the user matches the ad request influencer
+    if not any(influencer.id == ad_request.influencer_id for influencer in current_user.influencer_profile):
+        flash('You do not have permission to perform this action', category='danger')
+        return redirect(url_for('home'))
 
+    ad_request.status = 'accepted'
+    db.session.commit()
 
+    flash('Ad request accepted successfully!', category='success')
+    return redirect(url_for('show_ad_requests'))
 
+@app.route('/show_ad_request/<int:id>/reject', methods=['POST'])
+@login_required
+def reject_ad_request(id):
+    ad_request = AdRequest.query.get_or_404(id)
+    if current_user.role != 'influencer':
+        flash('You do not have permission to perform this action', category='danger')
+        return redirect(url_for('home'))
+
+    # Check if any influencer profile of the user matches the ad request influencer
+    if not any(influencer.id == ad_request.influencer_id for influencer in current_user.influencer_profile):
+        flash('You do not have permission to perform this action', category='danger')
+        return redirect(url_for('home'))
+
+    ad_request.status = 'rejected'
+    db.session.commit()
+
+    flash('Ad request rejected successfully!', category='success')
+    return redirect(url_for('show_ad_requests'))

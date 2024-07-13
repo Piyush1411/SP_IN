@@ -2,7 +2,7 @@ from flask import render_template, request, flash, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from spin_app import app, db
-from spin_app.models import User, InfluencerProfile, SponsorProfile, Campaign
+from spin_app.models import User, InfluencerProfile, SponsorProfile, Campaign, AdRequest
 from datetime import datetime
 
 @app.route('/')
@@ -297,4 +297,58 @@ def delete_campaign_post(id):
     db.session.commit()
 
     flash('Campaign deleted successfully', category='success')
+    return redirect(url_for('sp_dash'))
+
+@app.route('/ad_request/create/<int:campaign_id>', methods=['GET'])
+@login_required
+def create_ad_request(campaign_id):
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('sp_dash'))
+    campaign = Campaign.query.get(campaign_id)
+    if not campaign:
+        flash('Campaign does not exist')
+        return redirect(url_for('sp_dash'))
+
+    # Fetch influencers and any other data needed for the form
+    influencers = InfluencerProfile.query.all()
+
+    return render_template('new_ad_request.html', campaign=campaign, influencers=influencers)
+
+
+@app.route('/ad_request/create', methods=['POST'])
+@login_required
+def create_ad_request_post():
+    if current_user.role != 'sponsor':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('sp_dash'))
+    campaign_id = request.form.get('campaign_id')
+    influencer_id = request.form.get('influencer_id')
+    requirements = request.form.get('requirements')
+    payment_amount = request.form.get('payment_amount')
+    status = request.form.get('status')
+
+    try:
+        payment_amount = float(payment_amount)
+    except ValueError:
+        flash('Invalid payment amount', category='danger')
+        return redirect(url_for('new_ad_request', campaign_id=campaign_id))
+
+    if not requirements or not payment_amount or not status:
+        flash('Please fill out all fields', category='danger')
+        return redirect(url_for('new_ad_request', campaign_id=campaign_id))
+
+    # Create the new ad request
+    ad_request = AdRequest(
+        campaign_id=campaign_id,
+        influencer_id=influencer_id,
+        requirements=requirements,
+        payment_amount=payment_amount,
+        status=status
+    )
+
+    db.session.add(ad_request)
+    db.session.commit()
+
+    flash('Ad Request created successfully')
     return redirect(url_for('sp_dash'))

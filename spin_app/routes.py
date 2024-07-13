@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, redirect, url_for, session
+from flask import render_template, request, flash, redirect, url_for, session, g
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from spin_app import app, db
@@ -154,6 +154,7 @@ def sp_dash():
 
     sponsor_profile = SponsorProfile.query.filter_by(user_id=current_user.id).first()
     campaigns = Campaign.query.filter_by(owner_id=sponsor_profile.id).all()
+    
     return render_template('sp_dash.html',sponsor_profile=sponsor_profile, campaigns=campaigns, search_result=None)
 
 @app.route('/sp_dash', methods=['POST'])
@@ -193,7 +194,6 @@ def inf_dash():
         return redirect(url_for('home'))
     
     influencer_profile = InfluencerProfile.query.filter_by(user_id=current_user.id).first()
-    
     return render_template('inf_dash.html', influencer_profile=influencer_profile, search_result=None)
 
 
@@ -551,6 +551,25 @@ def delete_ad_request_post(id):
 
     flash('Ad Request deleted successfully', category='success')
     return redirect(url_for('sp_dash'))
+
+
+@app.before_request
+def before_request():
+    g.user = current_user
+
+
+@app.route('/show_ad_requests', methods=['GET'])
+@login_required
+def show_ad_requests():
+    if current_user.role != 'influencer':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
+    
+    influencer_profile = InfluencerProfile.query.filter_by(user_id=current_user.id).first()
+    ad_requests = AdRequest.query.filter_by(influencer_id=influencer_profile.id).all()
+
+    return render_template('show_ad_requests.html', influencer_profile=influencer_profile, ad_requests=ad_requests)
+
 
 
 

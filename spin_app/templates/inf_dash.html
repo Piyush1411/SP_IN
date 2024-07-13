@@ -6,18 +6,18 @@
 {% endblock %}
 
 {% block content %}
+<center>
 <h1 class="display-1">{{ influencer_profile.name }} Dashboard</h1>
+</center>
 
 <div class="container">
     <!-- Form for searching campaigns -->
     <form method="POST" action="{{ url_for('inf_dash_post') }}">
         <input type="text" name="searchbyniche" placeholder="Search By Niche">
         <input type="number" name="searchbyreach" placeholder="Search By Reach">
-
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
-    <!-- Form for clearing search results -->
     <form method="POST" action="{{ url_for('clear_search') }}">
         <button type="submit" class="btn btn-danger">Clear</button>
     </form>
@@ -36,12 +36,38 @@
             <p><strong>End Date:</strong> {{ campaign.end_date }}</p>
             <p><strong>Budget:</strong> {{ campaign.budget }}</p>
             <p><strong>Goals:</strong> {{ campaign.goals }}</p>
-            <p><strong>Sponsor:</strong> {{ campaign.owner.company_name }}</p> <!-- Access sponsor through owner -->
+            <p><strong>Sponsor:</strong> {{ campaign.owner.company_name }}</p>
         </li>
         {% endfor %}
     </ul>
     {% else %}
     <p>No campaigns found.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Display ad requests -->
+    <h2>Ad Requests</h2>
+    {% if ad_requests %}
+    <ul>
+        {% for ad_request in ad_requests %}
+        <li>
+            <h3>Ad Request from Campaign: {{ ad_request.campaign.name }}</h3>
+            <p><strong>Requirements:</strong> {{ ad_request.requirements }}</p>
+            <p><strong>Payment Amount:</strong> {{ ad_request.payment_amount }}</p>
+            <p><strong>Status:</strong> {{ ad_request.status }}</p>
+            <p><strong>Sponsor:</strong> {{ ad_request.sponsor.company_name }}</p>
+            <form method="POST" action="{{ url_for('accept_ad_request', ad_request_id=ad_request.id) }}">
+                <button type="submit" class="btn btn-success">Accept</button>
+            </form>
+            <form method="POST" action="{{ url_for('reject_ad_request', ad_request_id=ad_request.id) }}">
+                <button type="submit" class="btn btn-danger">Reject</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No ad requests found.</p>
     {% endif %}
 </div>
 

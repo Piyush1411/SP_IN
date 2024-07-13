@@ -1,0 +1,41 @@
+<!-- show_ad_requests.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    Ad Requests
+{% endblock %}
+
+{% block content %}
+<center>
+<h1 class="display-1">{{ influencer_profile.name }}'s Ad Requests</h1>
+</center>
+
+<div class="container">
+    <hr>
+
+    <!-- Display ad requests -->
+    <h2>Ad Requests</h2>
+    {% if ad_requests %}
+    <ul>
+        {% for ad_request in ad_requests %}
+        <li>
+            <h3>Ad Request from Campaign: {{ ad_request.campaign.name }}</h3>
+            <p><strong>Requirements:</strong> {{ ad_request.requirements }}</p>
+            <p><strong>Payment Amount:</strong> {{ ad_request.payment_amount }}</p>
+            <p><strong>Status:</strong> {{ ad_request.status }}</p>
+            <p><strong>Sponsor:</strong> {{ ad_request.sponsor.company_name }}</p>
+            <form method="POST" action="#">
+                <button type="submit" class="btn btn-success">Accept</button>
+            </form>
+            <form method="POST" action="#">
+                <button type="submit" class="btn btn-danger">Reject</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No ad requests found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

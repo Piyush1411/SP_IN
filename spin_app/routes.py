@@ -129,7 +129,21 @@ def admin_login_post():
 @app.route('/admin_dash')
 @login_required
 def admin_dash():
-    return render_template('admin_dash.html')
+    if current_user.role != 'admin':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
+    
+    # Query for statistics
+    num_users = User.query.count()
+    num_campaigns_public = Campaign.query.filter_by(visibility='public').count()
+    num_campaigns_private = Campaign.query.filter_by(visibility='private').count()
+    num_ad_requests = AdRequest.query.count()
+
+    return render_template('admin_dash.html', 
+                           num_users=num_users,
+                           num_campaigns_public=num_campaigns_public,
+                           num_campaigns_private=num_campaigns_private,
+                           num_ad_requests=num_ad_requests)
 
 @app.route('/sp_dash')
 @login_required

@@ -1,4 +1,4 @@
-<!--admin_dash.html-->
+<!-- admin_dash.html -->
 {% extends 'base.html' %}
 
 {% block title %}
@@ -6,10 +6,15 @@
 {% endblock %}
 
 {% block content %}
-
 <h1 class="display-1">Admin Dashboard</h1>
 
+<div class="container">
+    <h3>Statistics:</h3>
+    <ul>
+        <li>Active Users: {{ num_users }}</li>
+        <li>Campaigns (Public): {{ num_campaigns_public }}</li>
+        <li>Campaigns (Private): {{ num_campaigns_private }}</li>
+        <li>Ad Requests: {{ num_ad_requests }}</li>
+    </ul>
+</div>
 {% endblock %}
-
-
-

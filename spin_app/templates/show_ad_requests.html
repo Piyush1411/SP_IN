@@ -1,4 +1,3 @@
-<!-- show_ad_requests.html -->
 {% extends 'base.html' %}
 
 {% block title %}
@@ -39,5 +38,9 @@
             {% endfor %}
         </tbody>
     </table>
+    <a href="{{ url_for('inf_dash') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        Back
+    </a>
 </div>
 {% endblock %}

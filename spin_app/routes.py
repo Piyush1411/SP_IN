@@ -96,7 +96,7 @@ def register_post():
 def logout():
     logout_user()
     flash('You have been successfully logged out', category='primary')
-    return render_template('home.html')
+    return redirect(url_for('index'))
 
 @app.route('/admin_login')
 def admin_login():
@@ -301,7 +301,7 @@ def new_campaign_post():
     db.session.commit()
 
     flash('Campaign created successfully', category='success')
-    return render_template('sp_dash.html') 
+    return redirect(url_for('sp_dash'))
 
 @app.route('/campaign/<int:id>')
 @login_required
@@ -567,14 +567,14 @@ def show_ad_requests():
     
     influencer_profile = InfluencerProfile.query.filter_by(user_id=current_user.id).first()
     ad_requests = AdRequest.query.filter_by(influencer_id=influencer_profile.id).all()
-
+    print("influencer:", influencer_profile)
+    print("Ad Requests:", ad_requests)
     return render_template('show_ad_requests.html', influencer_profile=influencer_profile, ad_requests=ad_requests)
-
 
 @app.route('/show_ad_request/<int:id>/accept', methods=['POST'])
 @login_required
 def accept_ad_request(id):
-    ad_request = AdRequest.query.get_or_404(id)
+    ad_request = AdRequest.query.get(id)
     if current_user.role != 'influencer':
         flash('You do not have permission to perform this action', category='danger')
         return redirect(url_for('home'))
@@ -588,7 +588,7 @@ def accept_ad_request(id):
     db.session.commit()
 
     flash('Ad request accepted successfully!', category='success')
-    return redirect(url_for('show_ad_requests'))
+    return redirect(url_for('negotiate_payment', id=id))
 
 @app.route('/show_ad_request/<int:id>/reject', methods=['POST'])
 @login_required
@@ -608,3 +608,32 @@ def reject_ad_request(id):
 
     flash('Ad request rejected successfully!', category='success')
     return redirect(url_for('show_ad_requests'))
+
+@app.route('/ad_request/<int:id>/negotiate_payment', methods=['GET'])
+@login_required
+def negotiate_payment(id):
+    ad_request = AdRequest.query.get(id)
+    if current_user.role != 'influencer':
+        flash('You do not have permission to access this page', category='danger')
+        return redirect(url_for('home'))
+
+    return render_template('negotiate_payment.html', ad_request=ad_request)
+
+@app.route('/ad_request/<int:id>/negotiate_payment', methods=['POST'])
+@login_required
+def negotiate_payment_post(id):
+    ad_request = AdRequest.query.get_or_404(id)
+    if current_user.role != 'influencer':
+        flash('You do not have permission to perform this action', category='danger')
+        return redirect(url_for('home'))
+
+    negotiated_amount = request.form.get('negotiated_amount')
+    if negotiated_amount:
+        ad_request.negotiated_payment_amount = float(negotiated_amount)
+        db.session.commit()
+        flash('Payment amount negotiated successfully!', category='success')
+        return redirect(url_for('show_ad_requests'))
+    else:
+        flash('Please enter a valid negotiated amount.', category='danger')
+        return redirect(url_for('negotiate_payment_get', id=id))
+

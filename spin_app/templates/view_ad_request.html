@@ -1,3 +1,4 @@
+<!--view_ad_requests.html-->
 {% extends 'base.html' %}
 
 {% block title %}
@@ -24,6 +25,12 @@
             <th>Payment Amount</th>
             <td>${{ ad_request.payment_amount }}</td>
         </tr>
+        {% if ad_request.negotiated_payment_amount %}
+        <tr>
+            <th>Negotiated Payment Amount</th>
+            <td>${{ ad_request.negotiated_payment_amount }}</td>
+        </tr>
+        {% endif %}
         <tr>
             <th>Status</th>
             <td>{{ ad_request.status }}</td>

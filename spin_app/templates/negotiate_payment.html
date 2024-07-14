@@ -1,0 +1,21 @@
+<!-- negotiate_payment.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}
+    Negotiate Payment
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Negotiate Payment Amount</h1>
+    <p>Original Payment Amount: ${{ ad_request.payment_amount }}</p>
+    <form method="POST" action="{{ url_for('negotiate_payment_post', id=ad_request.id) }}">
+        <div class="mb-3">
+            <label for="negotiated_amount" class="form-label">Negotiated Payment Amount</label>
+            <input type="number" step="0.01" id="negotiated_amount" name="negotiated_amount" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

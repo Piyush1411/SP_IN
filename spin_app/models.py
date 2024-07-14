@@ -52,6 +52,7 @@ class AdRequest(db.Model):
     messages = db.Column(db.Text, nullable=True)
     requirements = db.Column(db.Text, nullable=False)
     payment_amount = db.Column(db.Float, nullable=False)
+    negotiated_payment_amount = db.Column(db.Float)
     status = db.Column(db.String(20), nullable=False)  # 'Pending', 'Accepted', 'Rejected'
     campaign = db.relationship('Campaign', backref=db.backref('ad_requests', lazy=True, cascade='all, delete-orphan'))
     sponsor = db.relationship('SponsorProfile', backref=db.backref('ad_requests', lazy=True, cascade='all, delete-orphan'))  

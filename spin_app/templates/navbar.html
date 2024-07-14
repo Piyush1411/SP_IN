@@ -8,14 +8,18 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                {% if current_user.role == 'influencer' %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('show_ad_requests') }}">Show Ad Request</a>
-                </li>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'influencer' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('show_ad_requests') }}">Show Ad Request</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    
                 {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-                </li>
             </ul>
         </div>
     </div>
